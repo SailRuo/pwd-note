@@ -12,11 +12,11 @@
   "app": {
     "windows": [
       {
-        "title": "PwdNote - 密码与凭据备忘",
-        "width": 1080,
-        "height": 700,
-        "minWidth": 850,
-        "minHeight": 550,
+        "title": "PwdNote - 极简密钥备忘",
+        "width": 920,
+        "height": 680,
+        "minWidth": 780,
+        "minHeight": 540,
         "center": true
       }
     ],

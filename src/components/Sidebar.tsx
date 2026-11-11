@@ -1,7 +1,6 @@
 import React from 'react';
 import { EntryType } from '../types';
 import {
-  ShieldCheck,
   Key,
   Globe,
   Server,
@@ -11,6 +10,8 @@ import {
   Lock,
   Download,
   Upload,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 export type CategoryFilter = 'all' | 'favorite' | EntryType;
@@ -29,6 +30,8 @@ interface SidebarProps {
     server: number;
     note: number;
   };
+  theme: 'dark' | 'light';
+  onToggleTheme: () => void;
   onLock: () => void;
   onExport: () => void;
   onImport: () => void;
@@ -41,76 +44,118 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onSelectTag,
   allTags,
   counts,
+  theme,
+  onToggleTheme,
   onLock,
   onExport,
   onImport,
 }) => {
+  const isDark = theme === 'dark';
+
   const navItems: { id: CategoryFilter; label: string; icon: React.ReactNode; count: number }[] = [
     {
       id: 'all',
       label: '全部凭据',
-      icon: <Folder className="w-4 h-4 text-slate-400" />,
+      icon: <Folder className={`w-4 h-4 ${isDark ? 'text-white/70' : 'text-slate-500'}`} />,
       count: counts.all,
     },
     {
       id: 'favorite',
       label: '星标收藏',
-      icon: <Star className="w-4 h-4 text-amber-400" />,
+      icon: <Star className="w-4 h-4 text-amber-500" />,
       count: counts.favorite,
     },
     {
       id: 'apikey',
       label: 'API Keys',
-      icon: <Key className="w-4 h-4 text-amber-400" />,
+      icon: <Key className="w-4 h-4 text-amber-500" />,
       count: counts.apikey,
     },
     {
       id: 'login',
       label: '账号密码',
-      icon: <Globe className="w-4 h-4 text-indigo-400" />,
+      icon: <Globe className="w-4 h-4 text-indigo-500" />,
       count: counts.login,
     },
     {
       id: 'server',
       label: '服务器',
-      icon: <Server className="w-4 h-4 text-emerald-400" />,
+      icon: <Server className="w-4 h-4 text-emerald-500" />,
       count: counts.server,
     },
     {
       id: 'note',
       label: '安全备忘',
-      icon: <FileText className="w-4 h-4 text-sky-400" />,
+      icon: <FileText className="w-4 h-4 text-sky-500" />,
       count: counts.note,
     },
   ];
 
   return (
-    <div className="w-60 bg-slate-950 border-r border-slate-800 flex flex-col h-full select-none">
+    <div
+      className={`w-56 border-r flex flex-col h-full select-none transition-colors duration-200 ${
+        isDark
+          ? 'bg-black/30 backdrop-blur-2xl border-white/10 text-white'
+          : 'bg-white/70 backdrop-blur-2xl border-slate-200/80 text-slate-800'
+      }`}
+    >
       {/* App Header */}
-      <div className="p-4 border-b border-slate-800/80 flex items-center justify-between">
+      <div
+        className={`p-4 border-b flex items-center justify-between ${
+          isDark ? 'border-white/10' : 'border-slate-200/80'
+        }`}
+      >
         <div className="flex items-center space-x-2.5">
-          <div className="w-8 h-8 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shadow-sm">
-            <ShieldCheck className="w-4 h-4" />
-          </div>
+          <img
+            src="/logo.png"
+            alt="PwdNote"
+            className="w-8 h-8 rounded-xl shadow-md border border-white/20 object-cover"
+          />
           <div>
-            <h1 className="text-sm font-bold text-white tracking-wide">PwdNote</h1>
-            <p className="text-[10px] text-slate-500">端到端凭据保险箱</p>
+            <h1 className="text-sm font-bold tracking-wider">PwdNote</h1>
+            <p className={`text-[10px] ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
+              极简凭据保险箱
+            </p>
           </div>
         </div>
 
-        <button
-          onClick={onLock}
-          title="立即锁定保险箱"
-          className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-        >
-          <Lock className="w-4 h-4" />
-        </button>
+        <div className="flex items-center space-x-1">
+          {/* 主题切换开关 */}
+          <button
+            onClick={onToggleTheme}
+            title={isDark ? '切换为浅色主题' : '切换为深色主题'}
+            className={`p-1.5 rounded-xl transition-colors ${
+              isDark
+                ? 'text-white/40 hover:text-white hover:bg-white/10'
+                : 'text-slate-400 hover:text-slate-700 hover:bg-slate-200/60'
+            }`}
+          >
+            {isDark ? <Sun className="w-4 h-4 text-amber-300" /> : <Moon className="w-4 h-4 text-indigo-600" />}
+          </button>
+
+          {/* 锁屏 */}
+          <button
+            onClick={onLock}
+            title="立即锁定"
+            className={`p-1.5 rounded-xl transition-colors ${
+              isDark
+                ? 'text-white/40 hover:text-white hover:bg-white/10'
+                : 'text-slate-400 hover:text-slate-700 hover:bg-slate-200/60'
+            }`}
+          >
+            <Lock className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Categories */}
-      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
+      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-5">
         <div>
-          <div className="px-2 text-[10px] font-semibold text-slate-500 tracking-wider uppercase mb-2">
+          <div
+            className={`px-3 text-[10px] font-semibold tracking-wider uppercase mb-2 ${
+              isDark ? 'text-white/40' : 'text-slate-400'
+            }`}
+          >
             凭据库
           </div>
           <div className="space-y-1">
@@ -123,10 +168,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     onSelectCategory(item.id);
                     onSelectTag(null);
                   }}
-                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all ${
                     active
-                      ? 'bg-indigo-600/15 text-indigo-400 border border-indigo-500/30'
-                      : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
+                      ? 'glass-active font-semibold shadow-sm ' + (isDark ? 'text-white' : 'text-indigo-600')
+                      : isDark
+                      ? 'text-white/70 hover:bg-white/10 hover:text-white'
+                      : 'text-slate-600 hover:bg-slate-200/50 hover:text-slate-900'
                   }`}
                 >
                   <div className="flex items-center space-x-2.5">
@@ -135,7 +182,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </div>
                   <span
                     className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-                      active ? 'bg-indigo-500/20 text-indigo-300' : 'text-slate-500'
+                      active
+                        ? isDark
+                          ? 'bg-white/20 text-white'
+                          : 'bg-indigo-600/10 text-indigo-600'
+                        : isDark
+                        ? 'text-white/40'
+                        : 'text-slate-400'
                     }`}
                   >
                     {item.count}
@@ -149,12 +202,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Tags */}
         {allTags.length > 0 && (
           <div>
-            <div className="px-2 text-[10px] font-semibold text-slate-500 tracking-wider uppercase mb-2 flex items-center justify-between">
+            <div
+              className={`px-3 text-[10px] font-semibold tracking-wider uppercase mb-2 flex items-center justify-between ${
+                isDark ? 'text-white/40' : 'text-slate-400'
+              }`}
+            >
               <span>标签分类</span>
               {selectedTag && (
                 <button
                   onClick={() => onSelectTag(null)}
-                  className="text-[10px] text-indigo-400 hover:text-indigo-300 lowercase"
+                  className="text-[10px] text-indigo-400 hover:underline lowercase"
                 >
                   清除
                 </button>
@@ -167,10 +224,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <button
                     key={tag}
                     onClick={() => onSelectTag(active ? null : tag)}
-                    className={`text-[11px] px-2 py-0.5 rounded-lg border transition-all ${
+                    className={`text-[11px] px-2.5 py-1 rounded-lg border transition-all ${
                       active
-                        ? 'bg-indigo-600 text-white border-indigo-500 shadow-sm'
-                        : 'bg-slate-800/80 text-slate-400 border-slate-700/60 hover:text-white hover:border-slate-600'
+                        ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-transparent shadow-sm'
+                        : isDark
+                        ? 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10 hover:text-white'
+                        : 'bg-slate-200/50 text-slate-600 border-slate-300/60 hover:bg-slate-200 hover:text-slate-900'
                     }`}
                   >
                     #{tag}
@@ -183,17 +242,29 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* 底部操作与备份 */}
-      <div className="p-3 border-t border-slate-800/80 space-y-1">
+      <div
+        className={`p-3 border-t space-y-1 ${
+          isDark ? 'border-white/10' : 'border-slate-200/80'
+        }`}
+      >
         <button
           onClick={onExport}
-          className="w-full flex items-center space-x-2 px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/70 text-xs transition-colors"
+          className={`w-full flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs transition-colors ${
+            isDark
+              ? 'text-white/50 hover:text-white hover:bg-white/10'
+              : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/60'
+          }`}
         >
           <Download className="w-3.5 h-3.5" />
           <span>导出加密备份</span>
         </button>
         <button
           onClick={onImport}
-          className="w-full flex items-center space-x-2 px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/70 text-xs transition-colors"
+          className={`w-full flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs transition-colors ${
+            isDark
+              ? 'text-white/50 hover:text-white hover:bg-white/10'
+              : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/60'
+          }`}
         >
           <Upload className="w-3.5 h-3.5" />
           <span>导入备份数据</span>

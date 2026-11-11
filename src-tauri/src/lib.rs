@@ -1,7 +1,9 @@
 pub mod crypto;
 pub mod models;
+pub mod touch_id;
 
 use models::{EncryptedVaultFile, VaultData, VaultEntry};
+use serde::Serialize;
 use std::fs;
 use std::path::PathBuf;
 use tauri::Manager;
@@ -30,6 +32,33 @@ fn get_vault_path(app: tauri::AppHandle) -> Result<String, String> {
 }
 
 #[tauri::command]
+fn is_touch_id_available() -> bool {
+    touch_id::is_supported()
+}
+
+#[tauri::command]
+fn has_touch_id_saved() -> bool {
+    touch_id::has_saved_password()
+}
+
+#[derive(Serialize)]
+struct TouchIdUnlockResult {
+    master_password: String,
+    entries: Vec<VaultEntry>,
+}
+
+#[tauri::command]
+fn unlock_with_touch_id(app: tauri::AppHandle) -> Result<TouchIdUnlockResult, String> {
+    touch_id::authenticate("验证 Touch ID 指纹以解锁 PwdNote 保险箱")?;
+    let password = touch_id::get_password_from_keychain()?;
+    let entries = unlock_vault(app, &password)?;
+    Ok(TouchIdUnlockResult {
+        master_password: password,
+        entries,
+    })
+}
+
+#[tauri::command]
 fn init_vault(app: tauri::AppHandle, password: &str) -> Result<(), String> {
     if password.trim().is_empty() {
         return Err("主密码不能为空".to_string());
@@ -44,6 +73,12 @@ fn init_vault(app: tauri::AppHandle, password: &str) -> Result<(), String> {
     let out_json = serde_json::to_string_pretty(&encrypted).map_err(|e| e.to_string())?;
 
     fs::write(&path, out_json).map_err(|e| format!("保存数据库失败: {}", e))?;
+
+    // 在支持的 macOS 机器上，将主密码安全托管至系统 Keychain，开启指纹解锁支持
+    if touch_id::is_supported() {
+        let _ = touch_id::save_password_to_keychain(password);
+    }
+
     Ok(())
 }
 
@@ -60,6 +95,11 @@ fn unlock_vault(app: tauri::AppHandle, password: &str) -> Result<Vec<VaultEntry>
     let decrypted_bytes = crypto::decrypt_data(&encrypted, password)?;
     let vault_data: VaultData =
         serde_json::from_slice(&decrypted_bytes).map_err(|e| format!("数据解析失败: {}", e))?;
+
+    // 解锁成功后，同步更新系统 Keychain
+    if touch_id::is_supported() {
+        let _ = touch_id::save_password_to_keychain(password);
+    }
 
     Ok(vault_data.entries)
 }
@@ -117,7 +157,6 @@ fn import_vault_backup(
     let vault_data: VaultData =
         serde_json::from_slice(&decrypted_bytes).map_err(|_| "密码错误或数据无法解密")?;
 
-    // 保存解密后的条目到主库
     save_entries(app, password, vault_data.entries.clone())?;
 
     Ok(vault_data.entries)
@@ -134,7 +173,10 @@ pub fn run() {
             unlock_vault,
             save_entries,
             export_vault_backup,
-            import_vault_backup
+            import_vault_backup,
+            is_touch_id_available,
+            has_touch_id_saved,
+            unlock_with_touch_id
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
