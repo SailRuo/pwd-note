@@ -49,11 +49,22 @@ npm run tauri dev
 ```
 首次运行会编译 Rust 依赖并启动带有热重载的桌面客户端窗口。
 
-### 3. 打包发布安装包
+### 3. 一键本地构建
 ```bash
-npm run tauri build
+# 方式一：运行本地打包脚本（自动打包并将 DMG 整理到 dist-release/）
+npm run package
+# 或直接运行
+./scripts/build.sh
 ```
-打包完成后会在 `src-tauri/target/release/bundle/` 下生成当前系统的原生安装包：
-- **macOS**：`.dmg` 或 `.app`
-- **Windows**：`.msi` 或 `.exe`
-- **Linux**：`.deb` 或 `.AppImage`
+
+---
+
+## 🤖 GitHub Actions 自动化构建（全平台）
+
+项目已内置完整的 GitHub Actions CI/CD 配置（`.github/workflows/release.yml`）：
+当你把代码推送到 GitHub 并打上版本 Tag 时（如 `v0.1.0`），或者在 GitHub 网页端的 Actions 页面点击 **Run workflow**：
+- GitHub 会自动为你**并行编译三大操作系统**安装包：
+  - 🍏 **macOS**：`.dmg` / `.app`
+  - 🪟 **Windows**：`.msi` / `.exe`
+  - 🐧 **Linux**：`.deb` / `.AppImage`
+- 编译完成后会自动在 GitHub 创建一个 **Release** 并挂上所有可执行安装包供直接下载！
