@@ -67,19 +67,22 @@ export const EntryCard: React.FC<EntryCardProps> = ({
 
   return (
     <div className="group glass-card glass-card-hover rounded-2xl p-4 flex items-center justify-between gap-4 transition-all">
-      {/* 1. 左侧：图标 + 标题 + 账号/标签 */}
-      <div className="flex items-center space-x-3 min-w-[160px] max-w-[210px] shrink-0">
+      {/* 1. 左侧：图标 + 标题 + 账号/标签（严格定宽，确保上下行绝对对齐） */}
+      <div className="flex items-center space-x-3 w-52 shrink-0">
         <div className="w-9 h-9 rounded-xl bg-indigo-500/10 flex items-center justify-center shrink-0 border border-indigo-500/20">
           {getIcon()}
         </div>
-        <div className="overflow-hidden">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center space-x-1.5">
-            <span className="text-sm font-semibold truncate dark:text-white text-slate-800">
+            <span
+              title={entry.title}
+              className="text-sm font-semibold truncate dark:text-white text-slate-800"
+            >
               {entry.title}
             </span>
             <button
               onClick={onToggleFavorite}
-              className={`p-0.5 rounded transition-colors ${
+              className={`p-0.5 rounded shrink-0 transition-colors ${
                 entry.favorite
                   ? 'text-amber-400'
                   : 'dark:text-white/20 text-slate-300 hover:text-amber-400 opacity-0 group-hover:opacity-100'
@@ -131,7 +134,7 @@ export const EntryCard: React.FC<EntryCardProps> = ({
         <button
           onClick={handleCopy}
           disabled={!secretText}
-          className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold shadow-sm transition-all active:scale-95 ${
+          className={`w-20 flex items-center justify-center space-x-1 py-1.5 rounded-xl text-xs font-semibold shadow-sm transition-all active:scale-95 ${
             copied
               ? 'bg-emerald-500 text-white shadow-emerald-500/30'
               : 'bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-indigo-600/30'
